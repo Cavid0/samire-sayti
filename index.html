@@ -10,136 +10,140 @@
             text-align: center;
             font-family: Arial, sans-serif;
             color: #d63384;
-            overflow: hidden;
         }
-        h1 {
-            margin-top: 10vh;
-            font-size: 3rem;
+        .menu {
+            margin: 20px;
         }
-        p {
-            font-size: 1.5rem;
-        }
-        .heart {
-            position: absolute;
-            color: red;
-            font-size: 24px;
-            animation: float 4s linear infinite;
-        }
-        @keyframes float {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            50% { transform: translateY(-100px) scale(1.2); opacity: 0.8; }
-            100% { transform: translateY(-200px) scale(1.5); opacity: 0; }
-        }
-        
-        /* XO OYUNU STİLLƏRİ */
-        .board {
-            display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 5px;
-            margin: 20px auto;
-            width: 320px;
-        }
-        .cell {
-            width: 100px;
-            height: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2rem;
-            background: white;
-            border: 2px solid #d63384;
+        .menu button {
+            margin: 10px;
+            padding: 10px 20px;
+            font-size: 1rem;
             cursor: pointer;
+            border: none;
+            background: #d63384;
+            color: white;
+            border-radius: 5px;
         }
-        .cell.taken {
-            cursor: not-allowed;
+        .content {
+            display: none;
+        }
+        .active {
+            display: block;
+        }
+        .question {
+            margin: 10px 0;
         }
     </style>
 </head>
 <body>
     <h1>Samirə, səni çox sevirəm! ❤️</h1>
     <p>Sən dünyadakı ən gözəl, ağıllı və xüsusi insansan! 💖</p>
-
+    
+    <div class="menu">
+        <button onclick="showContent('xoGame')">XO Oyunu</button>
+        <button onclick="showContent('loveTest')">Sevgi Testi</button>
+    </div>
+    
     <!-- XO OYUNU -->
-    <h2>XO Oyunu</h2>
-    <div class="board" id="board"></div>
-    <p id="message"></p>
-    <button onclick="restartGame()">Yenidən Başlat</button>
-
+    <div id="xoGame" class="content">
+        <h2>XO Oyunu</h2>
+        <div class="board" id="board" style="display: grid; grid-template-columns: repeat(3, 100px); grid-template-rows: repeat(3, 100px); gap: 5px; margin: 20px auto; width: 320px;"></div>
+        <p id="message"></p>
+        <button onclick="restartGame()">Yenidən Başlat</button>
+    </div>
+    
+    <!-- SEVGİ TESTİ -->
+    <div id="loveTest" class="content">
+        <h2>Sevgi Testi</h2>
+        <div id="questions"></div>
+        <button onclick="calculateScore()">Nəticəni Göstər</button>
+        <p id="result"></p>
+    </div>
+    
     <script>
-        function createHeart() {
-            const heart = document.createElement("div");
-            heart.classList.add("heart");
-            heart.innerHTML = "❤️";
-            document.body.appendChild(heart);
-            
-            let x = Math.random() * window.innerWidth;
-            let y = window.innerHeight;
-            heart.style.left = `${x}px`;
-            heart.style.top = `${y}px`;
-            
-            setTimeout(() => {
-                heart.remove();
-            }, 4000);
+        function showContent(id) {
+            document.querySelectorAll('.content').forEach(el => el.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
         }
-        setInterval(createHeart, 300);
 
         // XO OYUNU
         const board = document.getElementById("board");
-        let cells = [];
-        let currentPlayer = "X";
-        let gameActive = true;
-
+        let cells = [], currentPlayer = "X", gameActive = true;
         function createBoard() {
             board.innerHTML = "";
             cells = [];
             for (let i = 0; i < 9; i++) {
                 const cell = document.createElement("div");
-                cell.classList.add("cell");
+                cell.style.width = "100px";
+                cell.style.height = "100px";
+                cell.style.display = "flex";
+                cell.style.alignItems = "center";
+                cell.style.justifyContent = "center";
+                cell.style.fontSize = "2rem";
+                cell.style.background = "white";
+                cell.style.border = "2px solid #d63384";
                 cell.dataset.index = i;
                 cell.addEventListener("click", handleCellClick);
                 board.appendChild(cell);
                 cells.push(cell);
             }
         }
-
         function handleCellClick(event) {
             if (!gameActive) return;
             const cell = event.target;
             if (cell.textContent !== "") return;
-            
             cell.textContent = currentPlayer;
-            cell.classList.add("taken");
-
             if (checkWinner(currentPlayer)) {
                 document.getElementById("message").textContent = `${currentPlayer} qalib gəldi!`;
                 gameActive = false;
                 return;
             }
-
             currentPlayer = currentPlayer === "X" ? "O" : "X";
         }
-
         function checkWinner(player) {
-            const winPatterns = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], // üfüqi xətlər
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], // şaquli xətlər
-                [0, 4, 8], [2, 4, 6] // çarpaz xətlər
-            ];
-
-            return winPatterns.some(pattern => {
-                return pattern.every(index => cells[index].textContent === player);
-            });
+            const winPatterns = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+            return winPatterns.some(pattern => pattern.every(index => cells[index].textContent === player));
         }
-
         function restartGame() {
             gameActive = true;
             currentPlayer = "X";
             document.getElementById("message").textContent = "";
             createBoard();
         }
-
         createBoard();
+
+        // SEVGİ TESTİ
+        const questions = [
+            "Bir-birinizin ən sevdiyi rəngi bilirsinizmi?",
+            "Hər gün bir-birinizə 'Səni sevirəm' deyirsinizmi?",
+            "Bir-birinizə hədiyyə almağı sevirsinizmi?",
+            "Sevgilinizin etdiyi sürprizlər sizi xoşbəxt edir?",
+            "Xoşbəxtliyiniz üçün sevgilinizin xoşbəxt olması vacibdirmi?",
+            "Gələcək üçün ortaq planlarınız var?",
+            "Sevgilinizin uğurları sizi öz uğurunuz kimi sevindirir?",
+            "Münasibətinizdə açıq və səmimi danışırsınızmı?",
+            "Həyatınızın qalan hissəsini sevgilinizlə keçirmək istəyirsiniz?",
+            "Sevgilinizlə yaşlanmaq istəyirsinizmi?"
+        ];
+        const questionsDiv = document.getElementById("questions");
+        let answers = [];
+        questions.forEach((q, index) => {
+            const div = document.createElement("div");
+            div.classList.add("question");
+            div.innerHTML = `<p>${index + 1}. ${q}</p>
+                <label><input type="radio" name="q${index}" value="1"> Bəli</label>
+                <label><input type="radio" name="q${index}" value="0"> Xeyr</label>`;
+            questionsDiv.appendChild(div);
+        });
+        function calculateScore() {
+            let score = 0;
+            questions.forEach((_, index) => {
+                const answer = document.querySelector(`input[name="q${index}"]:checked`);
+                if (answer) score += parseInt(answer.value);
+            });
+            const percent = (score / questions.length) * 100;
+            document.getElementById("result").textContent = `Uyğunluq faizi: ${percent.toFixed(2)}%`;
+        }
     </script>
 </body>
 </html>
